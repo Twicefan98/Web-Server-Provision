@@ -1,0 +1,32 @@
+---
+- hosts: all
+  name: Configure Nginx Webserver
+  tasks:
+    - name: Ensure nginx is latest version
+      apt: name=nginx state=latest
+      become: yes
+    - name: Start nginx
+      service: 
+        name: nginx
+        state: started
+      become: yes
+    - name: Copy config files and restart Nginx
+      copy:
+        src: /home/twicefan/web-server-terraform/static_site.cfg # Replace with own working path
+        dest: /etc/nginx/sites-available/static_site.cfg
+      become: yes 
+    - name: Create symlink from sites-available to sites-enabled
+      file:
+        src: /etc/nginx/sites-available/static_site.cfg
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      become: yes
+    - name: Copy website content to Nginx
+      copy:
+        src: /home/twicefan/web-server-terraform/static-site-src/ # Replace with own working path
+        dest: /home/ubuntu/static-site 
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+      become: yes
